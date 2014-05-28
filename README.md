@@ -1,6 +1,6 @@
 libdispatch
 ===========
-Grand Central Dispatch for Windows, extracted from iTunes (same version as in iTunes 11.2)
+Grand Central Dispatch for Windows, extracted from iTunes (same version as in iTunes 11.2.2)
 
 This library is 32-bit though it comes from iTunes x64.
 
