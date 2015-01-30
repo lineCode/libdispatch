@@ -1,8 +1,6 @@
 libdispatch
 ===========
-Grand Central Dispatch for Windows, extracted from iTunes 12.0.1
-
-This library is 32-bit though it comes from iTunes x64.
+Grand Central Dispatch for Windows, extracted from iTunes 12.0.1 (same version as in iTunes 12.1)
 
 Usage
 -----
@@ -11,7 +9,7 @@ Usage
 
 Dependency
 ----------
-Microsoft Visual C++ 2010 x86
+Microsoft Visual C++ 2010
 
 License
 -------
