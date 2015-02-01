@@ -1,6 +1,10 @@
 libdispatch
 ===========
-Grand Central Dispatch for Windows, extracted from iTunes 12.0.1 (same version as in iTunes 12.1)
+Grand Central Dispatch for Windows
+
+x86 is extracted from iTunes 12.0.1 (same version as in iTunes 12.1)
+
+x64 is extracted from iTunes 12.1
 
 Usage
 -----
