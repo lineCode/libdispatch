@@ -2,9 +2,7 @@ libdispatch
 ===========
 Grand Central Dispatch for Windows
 
-x86 is extracted from iTunes 12.0.1 (same version as in iTunes 12.2.2)
-
-x64 is extracted from iTunes 12.1 (same version as in iTunes 12.2.2)
+Extracted from iTunes 12.3
 
 Usage
 -----
