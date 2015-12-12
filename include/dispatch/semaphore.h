@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2008-2009 Apple Inc. All rights reserved.
+ * Copyright (c) 2008-2013 Apple Inc. All rights reserved.
  *
  * @APPLE_APACHE_LICENSE_HEADER_START@
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * @APPLE_APACHE_LICENSE_HEADER_END@
  */
 
@@ -34,7 +34,7 @@
  */
 DISPATCH_DECL(dispatch_semaphore);
 
-__DISPATCH_BEGIN_DECLS
+__BEGIN_DECLS
 
 /*!
  * @function dispatch_semaphore_create
@@ -44,7 +44,7 @@ __DISPATCH_BEGIN_DECLS
  *
  * @discussion
  * Passing zero for the value is useful for when two threads need to reconcile
- * the completion of a particular event. Passing a value greather than zero is
+ * the completion of a particular event. Passing a value greater than zero is
  * useful for managing a finite pool of resources, where the pool size is equal
  * to the value.
  *
@@ -56,7 +56,8 @@ __DISPATCH_BEGIN_DECLS
  * The newly created semaphore, or NULL on failure.
  */
 __OSX_AVAILABLE_STARTING(__MAC_10_6,__IPHONE_4_0)
-DISPATCH_EXPORT DISPATCH_MALLOC DISPATCH_NOTHROW
+DISPATCH_EXPORT DISPATCH_MALLOC DISPATCH_RETURNS_RETAINED DISPATCH_WARN_RESULT
+DISPATCH_NOTHROW
 dispatch_semaphore_t
 dispatch_semaphore_create(long value);
 
@@ -68,7 +69,7 @@ dispatch_semaphore_create(long value);
  *
  * @discussion
  * Decrement the counting semaphore. If the resulting value is less than zero,
- * this function waits in FIFO order for a signal to occur before returning.
+ * this function waits for a signal to occur before returning.
  *
  * @param dsema
  * The semaphore. The result of passing NULL in this parameter is undefined.
@@ -107,6 +108,6 @@ DISPATCH_EXPORT DISPATCH_NONNULL_ALL DISPATCH_NOTHROW
 long
 dispatch_semaphore_signal(dispatch_semaphore_t dsema);
 
-__DISPATCH_END_DECLS
+__END_DECLS
 
 #endif /* __DISPATCH_SEMAPHORE__ */

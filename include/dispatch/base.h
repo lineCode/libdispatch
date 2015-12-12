@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2008-2009 Apple Inc. All rights reserved.
+ * Copyright (c) 2008-2012 Apple Inc. All rights reserved.
  *
  * @APPLE_APACHE_LICENSE_HEADER_START@
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * @APPLE_APACHE_LICENSE_HEADER_END@
  */
 
@@ -25,92 +25,7 @@
 #error "Please #include <dispatch/dispatch.h> instead of this file directly."
 #endif
 
-#ifdef __GNUC__
-#define DISPATCH_INLINE __attribute__((always_inline)) inline
-#elif _MSC_VER
-#define DISPATCH_INLINE __forceinline
-#endif
-
 #if __GNUC__
-#define DISPATCH_EXPORT extern __attribute__((visibility("default")))
-#else
-#if defined(_WINDLL) // building a DLL
-#define DISPATCH_EXPORT extern __declspec(dllexport)
-#elif defined(_LIB) // building a static lib
-#define DISPATCH_EXPORT extern
-#elif defined(USE_DISPATCH_STATIC_LIB) // linking a static lib
-#pragma message("Applications must link using /OPT:ICF, COMDAT folding, due to quirks of the Microsoft linker")
-#define DISPATCH_EXPORT extern
-#else
-#define DISPATCH_EXPORT extern __declspec(dllimport)
-#endif
-#endif
-
-#if defined(__cplusplus)
-/*
- * Dispatch objects are NOT C++ objects. Nevertheless, we can at least keep C++
- * aware of type compatibility.
- */
-typedef struct dispatch_object_s {
-private:
-	dispatch_object_s();
-	~dispatch_object_s();
-	dispatch_object_s(const dispatch_object_s &);
-	void operator=(const dispatch_object_s &);
-} *dispatch_object_t;
-#elif defined(__GNUC__)
-typedef union {
-	struct dispatch_object_s *_do;
-	struct dispatch_continuation_s *_dc;
-	struct dispatch_queue_s *_dq;
-	struct dispatch_queue_attr_s *_dqa;
-	struct dispatch_group_s *_dg;
-	struct dispatch_source_s *_ds;
-	struct dispatch_source_attr_s *_dsa;
-	struct dispatch_semaphore_s *_dsema;
-} dispatch_object_t __attribute__((transparent_union));
-
-DISPATCH_INLINE dispatch_object_t as_do(dispatch_object_t do_)
-{
-	return do_;
-}
-#else
-typedef union {
-	struct dispatch_object_s *_do;
-	struct dispatch_continuation_s *_dc;
-	struct dispatch_queue_s *_dq;
-	struct dispatch_queue_attr_s *_dqa;
-	struct dispatch_group_s *_dg;
-	struct dispatch_source_s *_ds;
-	struct dispatch_source_attr_s *_dsa;
-	struct dispatch_semaphore_s *_dsema;
-} dispatch_object_t;
-
-DISPATCH_INLINE dispatch_object_t as_do(void* v)
-{
-#pragma warning(suppress : 4204) // warning C4204: nonstandard extension used : non-constant aggregate initializer
-	dispatch_object_t do_ = { v };
-	return do_;
-}
-#endif
-
-typedef void (*dispatch_function_t)(void *);
-typedef void (*dispatch_function_apply_t)(void*, size_t);
-
-#ifdef __cplusplus
-#ifdef _MSC_VER
-#define DISPATCH_DECL(name) \
-__pragma(warning(suppress: 4624)) /* warning C4624: '%s' : destructor could not be generated because a base class destructor is inaccessible */ \
-typedef struct name##_s : public dispatch_object_s {} *name##_t
-#else
-#define DISPATCH_DECL(name) typedef struct name##_s : public dispatch_object_s {} *name##_t
-#endif
-#else
-/*! @parseOnly */
-#define DISPATCH_DECL(name) typedef struct name##_s *name##_t
-#endif
-
-#ifdef __GNUC__
 #define DISPATCH_NORETURN __attribute__((__noreturn__))
 #define DISPATCH_NOTHROW __attribute__((__nothrow__))
 #define DISPATCH_NONNULL1 __attribute__((__nonnull__(1)))
@@ -120,7 +35,7 @@ typedef struct name##_s : public dispatch_object_s {} *name##_t
 #define DISPATCH_NONNULL5 __attribute__((__nonnull__(5)))
 #define DISPATCH_NONNULL6 __attribute__((__nonnull__(6)))
 #define DISPATCH_NONNULL7 __attribute__((__nonnull__(7)))
-#if __clang__
+#if __clang__ && __clang_major__ < 3
 // rdar://problem/6857843
 #define DISPATCH_NONNULL_ALL
 #else
@@ -128,16 +43,14 @@ typedef struct name##_s : public dispatch_object_s {} *name##_t
 #endif
 #define DISPATCH_SENTINEL __attribute__((__sentinel__))
 #define DISPATCH_PURE __attribute__((__pure__))
+#define DISPATCH_CONST __attribute__((__const__))
 #define DISPATCH_WARN_RESULT __attribute__((__warn_unused_result__))
 #define DISPATCH_MALLOC __attribute__((__malloc__))
-#define DISPATCH_FORMAT(...) __attribute__((__format__(__VA_ARGS__)))
+#define DISPATCH_ALWAYS_INLINE __attribute__((__always_inline__))
+#define DISPATCH_UNAVAILABLE __attribute__((__unavailable__))
 #else
 /*! @parseOnly */
-#ifdef _MSC_VER
-#define DISPATCH_NORETURN __declspec(noreturn)
-#else
 #define DISPATCH_NORETURN
-#endif
 /*! @parseOnly */
 #define DISPATCH_NOTHROW
 /*! @parseOnly */
@@ -161,11 +74,75 @@ typedef struct name##_s : public dispatch_object_s {} *name##_t
 /*! @parseOnly */
 #define DISPATCH_PURE
 /*! @parseOnly */
+#define DISPATCH_CONST
+/*! @parseOnly */
 #define DISPATCH_WARN_RESULT
 /*! @parseOnly */
 #define DISPATCH_MALLOC
 /*! @parseOnly */
-#define DISPATCH_FORMAT(...)
+#define DISPATCH_ALWAYS_INLINE
+/*! @parseOnly */
+#define DISPATCH_UNAVAILABLE
 #endif
+
+#if TARGET_OS_WIN32 && defined(__DISPATCH_BUILDING_DISPATCH__) && \
+		defined(__cplusplus)
+#define DISPATCH_EXPORT extern "C" extern __declspec(dllexport)
+#elif TARGET_OS_WIN32 && defined(__DISPATCH_BUILDING_DISPATCH__)
+#define DISPATCH_EXPORT extern __declspec(dllexport)
+#elif TARGET_OS_WIN32 && defined(__cplusplus)
+#define DISPATCH_EXPORT extern "C" extern __declspec(dllimport)
+#elif TARGET_OS_WIN32
+#define DISPATCH_EXPORT extern __declspec(dllimport)
+#elif __GNUC__
+#define DISPATCH_EXPORT extern __attribute__((visibility("default")))
+#else
+#define DISPATCH_EXPORT extern
+#endif
+
+#if __GNUC__
+#define DISPATCH_INLINE static __inline__
+#else
+#define DISPATCH_INLINE static inline
+#endif
+
+#if __GNUC__
+#define DISPATCH_EXPECT(x, v) __builtin_expect((x), (v))
+#else
+#define DISPATCH_EXPECT(x, v) (x)
+#endif
+
+#ifndef DISPATCH_RETURNS_RETAINED_BLOCK
+#if defined(__has_attribute)
+#if __has_attribute(ns_returns_retained)
+#define DISPATCH_RETURNS_RETAINED_BLOCK __attribute__((__ns_returns_retained__))
+#else
+#define DISPATCH_RETURNS_RETAINED_BLOCK
+#endif
+#else
+#define DISPATCH_RETURNS_RETAINED_BLOCK
+#endif
+#endif
+
+#if defined(__has_feature) && defined(__has_extension)
+#if __has_feature(objc_fixed_enum) || __has_extension(cxx_strong_enums)
+#define DISPATCH_ENUM(name, type, ...) \
+		typedef enum : type { __VA_ARGS__ } name##_t
+#else
+#define DISPATCH_ENUM(name, type, ...) \
+		enum { __VA_ARGS__ }; typedef type name##_t
+#endif
+#if __has_feature(enumerator_attributes)
+#define DISPATCH_ENUM_AVAILABLE_STARTING __OSX_AVAILABLE_STARTING
+#else
+#define DISPATCH_ENUM_AVAILABLE_STARTING(...)
+#endif
+#else
+#define DISPATCH_ENUM(name, type, ...) \
+		enum { __VA_ARGS__ }; typedef type name##_t
+#define DISPATCH_ENUM_AVAILABLE_STARTING(...)
+#endif
+
+typedef void (*dispatch_function_t)(void *);
 
 #endif
