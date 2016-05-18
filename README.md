@@ -2,7 +2,7 @@ libdispatch
 ===========
 Grand Central Dispatch for Windows
 
-Extracted from iTunes 12.3.1 (same version as in iTunes 12.3.3)
+Extracted from iTunes 12.3.1 (same version as in iTunes 12.4)
 
 Usage
 -----
